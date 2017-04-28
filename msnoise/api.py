@@ -1021,9 +1021,11 @@ def stack(session, data):
     goal_sampling_rate = float(get_config(session, "cc_sampling_rate"))
     data = data[~np.isnan(data).any(axis=1)]
     if stack_method == "linear":
+        logging.debug("Doing a linear stack")
         corr = data.mean(axis=0)
 
     elif stack_method == "pws":
+        logging.debug("Doing a PWS stack")
         corr = np.zeros(data.shape[1], dtype='f8')
         phasestack = np.zeros(data.shape[1], dtype='c8')
         for i in range(data.shape[0]):
@@ -1068,11 +1070,12 @@ def get_results(session, station1, station2, filterid, components, dates,
             i += 1
         except:
             pass
-    logging.debug("Stacking...")
+
     if format == "matrix":
         return i, stack_data
 
     elif format == "stack":
+        logging.debug("Stacking...")
         corr = stack(session, stack_data)
 
         if i > 0:
