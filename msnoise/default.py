@@ -1,4 +1,7 @@
 from collections import OrderedDict
+from msnoise.api import get_config, get_components_to_compute
+from obspy import UTCDateTime
+
 default = OrderedDict()
 default['data_folder'] = ["Data Folder",'']
 default['output_folder'] = ["CC Output Folder",'CROSS_CORRELATIONS']
@@ -58,3 +61,95 @@ default['dtt_maxerr'] = ["Maximum error on dt measurement, MWCS points with valu
 default['dtt_maxdt'] = ["Maximum dt values, MWCS points with values larger than that will **not** be used in the WLS","0.1"]
 
 default['plugins'] = ["Comma separated list of plugin names. Plugins names should be importable Python modules.",""]
+
+
+class Params():
+    def __init__(self):
+        self.data_folder = None
+        self.output_folder = None
+        self.data_structure = None
+        self.network = None
+        self.channels = None
+        self.startdate = None
+        self.enddate = None
+        self.analysis_duration = None
+        self.cc_sampling_rate = None
+        self.resampling_method = None
+        self.preprocess_lowpass = None
+        self.preprocess_highpass = None
+        self.remove_response = None
+        self.response_format = None
+        self.response_path = None
+        self.response_prefilt = None
+        self.maxlag = None
+        self.corr_duration = None
+        self.overlap = None
+        self.windsorizing = None
+        self.whitening = None
+        self.stack_method = None
+        self.pws_timegate = None
+        self.pws_power = None
+        self.crondays = None
+        self.components_to_compute = None
+        self.autocorr = None
+        self.keep_all = None
+        self.keep_days = None
+        self.ref_begin = None
+        self.ref_end = None
+        self.mov_stack = None
+        self.export_format = None
+        self.sac_format = None
+        self.dtt_lag = None
+        self.dtt_v = None
+        self.dtt_minlag = None
+        self.dtt_width = None
+        self.dtt_sides = None
+        self.dtt_mincoh = None
+        self.dtt_maxerr = None
+        self.dtt_maxdt = None
+        self.plugins = None
+
+    def fetch_data(self, db):
+        self.data_folder  = get_config(db, "data_folder")
+        self.output_folder = get_config(db, "output_folder")
+        self.data_structure = get_config(db, "data_structure")
+        self.network = get_config(db, "network")
+        self.channels = get_config(db, "channels")
+        self.startdate = UTCDateTime(get_config(db, "startdate"))
+        self.enddate = UTCDateTime(get_config(db, "enddate"))
+        self.analysis_duration = float(get_config(db, "analysis_duration"))
+        self.cc_sampling_rate = float(get_config(db, "cc_sampling_rate"))
+        self.resampling_method = get_config(db, "resampling_method")
+        self.preprocess_lowpass = float(get_config(db, "preprocess_lowpass"))
+        self.preprocess_highpass = float(get_config(db, "preprocess_highpass"))
+        self.remove_response = get_config(db, "remove_response", isbool=True)
+        self.response_format = get_config(db, "response_format")
+        self.response_path = get_config(db, "response_path")
+        self.response_prefilt = get_config(db, "response_prefilt")
+        self.maxlag = float(get_config(db, "maxlag"))
+        self.corr_duration = float(get_config(db, "corr_duration"))
+        self.overlap = float(get_config(db, "overlap"))
+        self.windsorizing = float(get_config(db, "windsorizing"))
+        self.whitening = get_config(db, "whitening")
+        self.stack_method = get_config(db, "stack_method")
+        self.pws_timegate = float(get_config(db, "pws_timegate"))
+        self.pws_power = float(get_config(db, "pws_power"))
+        self.crondays = get_config(db, "crondays")
+        self.components_to_compute = get_components_to_compute(db)
+        self.autocorr = get_config(db, "autocorr")
+        self.keep_all = get_config(db, "keep_all", isbool=True)
+        self.keep_days = get_config(db, "keep_days", isbool=True)
+        self.ref_begin = get_config(db, "ref_begin")
+        self.ref_end = get_config(db, "ref_end")
+        self.mov_stack = get_config(db, "mov_stack")
+        self.export_format = get_config(db, "export_format")
+        self.sac_format = get_config(db, "sac_format")
+        self.dtt_lag = get_config(db, "dtt_lag")
+        self.dtt_v = get_config(db, "dtt_v")
+        self.dtt_minlag = get_config(db, "dtt_minlag")
+        self.dtt_width = get_config(db, "dtt_width")
+        self.dtt_sides = get_config(db, "dtt_sides")
+        self.dtt_mincoh = get_config(db, "dtt_mincoh")
+        self.dtt_maxerr = get_config(db, "dtt_maxerr")
+        self.dtt_maxdt = get_config(db, "dtt_maxdt")
+        self.plugins = get_config(db,"plugins" )

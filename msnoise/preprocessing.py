@@ -12,7 +12,7 @@ try:
 except:
     pass
 
-from .api import *
+from msnoise.api import *
 
 
 def preprocess(db, stations, comps, goal_day, params, responses=None):
@@ -100,23 +100,23 @@ def preprocess(db, stations, comps, goal_day, params, responses=None):
                         "%s.%s Highpass at %.2f Hz" % (station, comp, params.preprocess_highpass))
                     trace.filter("highpass", freq=params.preprocess_highpass, zerophase=True)
 
-                    if trace.stats.sampling_rate != params.goal_sampling_rate:
+                    if trace.stats.sampling_rate != params.cc_sampling_rate:
                         logging.debug(
                             "%s.%s Lowpass at %.2f Hz" % (station, comp, params.preprocess_lowpass))
                         trace.filter("lowpass", freq=params.preprocess_lowpass, zerophase=True, corners=8)
 
                         if params.resampling_method == "Resample":
                             logging.debug("%s.%s Downsample to %.1f Hz" %
-                                          (station, comp, params.goal_sampling_rate))
+                                          (station, comp, params.cc_sampling_rate))
                             trace.data = resample(
-                                trace.data, params.goal_sampling_rate / trace.stats.sampling_rate, 'sinc_fastest')
+                                trace.data, params.cc_sampling_rate / trace.stats.sampling_rate, 'sinc_fastest')
 
                         elif params.resampling_method == "Decimate":
-                            decimation_factor = trace.stats.sampling_rate / params.goal_sampling_rate
+                            decimation_factor = trace.stats.sampling_rate / params.cc_sampling_rate
                             if not int(decimation_factor) == decimation_factor:
                                 logging.warning("%s.%s CANNOT be decimated by an integer factor, consider using Resample or Lanczos methods"
                                                 " Trace sampling rate = %i ; Desired CC sampling rate = %i" %
-                                                (station, comp, trace.stats.sampling_rate, params.goal_sampling_rate))
+                                                (station, comp, trace.stats.sampling_rate, params.cc_sampling_rate))
                                 sys.stdout.flush()
                                 sys.exit()
                             logging.debug("%s.%s Decimate by a factor of %i" %
@@ -125,13 +125,13 @@ def preprocess(db, stations, comps, goal_day, params, responses=None):
 
                         elif params.resampling_method == "Lanczos":
                             logging.debug("%s.%s Downsample to %.1f Hz" %
-                                          (station, comp, params.goal_sampling_rate))
+                                          (station, comp, params.cc_sampling_rate))
                             trace.data = np.array(trace.data)
-                            trace.interpolate(method="lanczos", sampling_rate=params.goal_sampling_rate, a=1.0)
+                            trace.interpolate(method="lanczos", sampling_rate=params.cc_sampling_rate, a=1.0)
 
-                        trace.stats.sampling_rate = params.goal_sampling_rate
+                        trace.stats.sampling_rate = params.cc_sampling_rate
 
-                if get_config(db, 'remove_response', isbool=True):
+                if params.remove_response:
                     logging.debug('%s Removing instrument response'%stream[0].id)
                     response_prefilt = eval(get_config(db, 'response_prefilt'))
 

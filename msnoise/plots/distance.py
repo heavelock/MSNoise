@@ -18,7 +18,8 @@ Example:
 
 import matplotlib.pyplot as plt
 
-from ..api import *
+from msnoise.api import *
+from msnoise.default import Params
 
 
 def main(filterid, components, ampli=1, show=True, outfile=None,
@@ -26,15 +27,16 @@ def main(filterid, components, ampli=1, show=True, outfile=None,
     db = connect()
 
     pairs = get_station_pairs(db, used=1)
-    cc_sampling_rate = float(get_config(db, 'cc_sampling_rate'))
-    export_format = get_config(db, 'export_format')
-    if export_format == "BOTH":
+
+    params = Params()
+    params.fetch_data(db)
+
+    if params.export_format == "BOTH":
         extension = ".MSEED"
     else:
-        extension = "."+export_format
-    maxlag = float(get_config(db, 'maxlag'))
+        extension = "." + params.export_format
     maxlagsamples = get_maxlag_samples(db)
-    t = np.linspace(-maxlag, maxlag, maxlagsamples)
+    t = np.linspace(-params.maxlag, params.maxlag, maxlagsamples)
 
     if refilter:
         freqmin, freqmax = refilter.split(':')

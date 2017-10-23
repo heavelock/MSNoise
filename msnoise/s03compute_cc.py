@@ -153,22 +153,19 @@ could occur with SQLite.
 
 """
 import sys
-import time
 
 try:
     from scikits.samplerate import resample
 except:
     pass
 
-from .api import *
-from .move2obspy import myCorr
-from .move2obspy import whiten
+from msnoise.api import *
+from msnoise.move2obspy import myCorr, whiten
+from msnoise.default import Params
 
-from .preprocessing import preprocess
+from msnoise.preprocessing import preprocess
 
 
-class Params():
-    pass
 
 
 def main():
@@ -185,31 +182,11 @@ def main():
         logging.info("NO FILTERS DEFINED, exiting")
         sys.exit()
 
-    # Get Configuration
     params = Params()
-    params.goal_sampling_rate = float(get_config(db, "cc_sampling_rate"))
-    params.goal_duration = float(get_config(db, "analysis_duration"))
-    params.overlap = float(get_config(db, "overlap"))
-    params.maxlag = float(get_config(db, "maxlag"))
-    params.corr_duration = float(get_config(db, "corr_duration"))
-    params.min30 = float(get_config(db, "corr_duration")) *\
-                   params.goal_sampling_rate
-    params.windsorizing = float(get_config(db, "windsorizing"))
-    params.whitening = get_config(db, 'whitening')
-    params.resampling_method = get_config(db, "resampling_method")
-    params.preprocess_lowpass = float(get_config(db, "preprocess_lowpass"))
-    params.preprocess_highpass = float(get_config(db, "preprocess_highpass"))
-    params.keep_all = get_config(db, 'keep_all', isbool=True)
-    params.keep_days = get_config(db, 'keep_days', isbool=True)
-    params.components_to_compute = get_components_to_compute(db)
-
-    params.stack_method = get_config(db, 'stack_method')
-    params.pws_timegate = float(get_config(db, 'pws_timegate'))
-    params.pws_power = float(get_config(db, 'pws_power'))
+    params.fetch_data(db)
 
     logging.info("Will compute %s" % " ".join(params.components_to_compute))
-
-    if get_config(db, 'remove_response', isbool=True):
+    if params.remove_response:
         logging.debug('Pre-loading all instrument response')
         responses = preload_instrument_responses(db)
     else:
@@ -249,7 +226,7 @@ def main():
                                       responses)
 
         # print '##### STREAMS ARE ALL PREPARED AT goal Hz #####'
-        dt = 1. / params.goal_sampling_rate
+        dt = 1. / params.cc_sampling_rate
 
         # ITERATING OVER PAIRS #####
         for pair in pairs:
@@ -346,7 +323,7 @@ def main():
                                       " skipping..." % tmp[0].stats.starttime)
                         continue
                     if tmp[0].stats.npts < 2*(params.maxlag *
-                                              params.goal_sampling_rate) + 1:
+                                              params.cc_sampling_rate) + 1:
                         continue
                     if len(tmp) < 2:
                         continue
@@ -414,7 +391,7 @@ def main():
                             if not np.all(np.isfinite(corr)):
                                 logging.debug("corr object contains NaNs, skipping")
                                 continue
-                            if len(corr) < 2 * (params.maxlag * params.goal_sampling_rate) + 1:
+                            if len(corr) < 2 * (params.maxlag * params.cc_sampling_rate) + 1:
                                 logging.debug(
                                     "corr object is too small, skipping")
                                 continue
@@ -449,10 +426,9 @@ def main():
                         add_corr(
                                 db, station1.replace('.', '_'),
                                 station2.replace('.', '_'), int(filterid),
-                                thisdate, thistime,  params.min30 /
-                                params.goal_sampling_rate,
+                                thisdate, thistime,  params.corr_duration,
                                 components, corr,
-                                params.goal_sampling_rate, day=True,
+                                params.cc_sampling_rate, day=True,
                                 ncorr=corrs.shape[0])
                         del corrs, corr, thisdate, thistime
                 del current, allcorr, t1, t2
@@ -464,6 +440,7 @@ def main():
         logging.info("Job Finished. It took %.2f seconds" % (time.time() - jt))
         del stream
     logging.info('*** Finished: Compute CC ***')
+
 
 if __name__ == "__main__":
     main()    
