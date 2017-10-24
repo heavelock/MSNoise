@@ -4,7 +4,9 @@ allow to plot the daily or the mov-stacked CCF. Filters and components are
 selectable too. The ``--ampli`` argument allows to increase the vertical scale
 of the CCFs. The ``--seismic`` shows the up-going wiggles with a black-filled
 background (very heavy !). Passing ``--refilter`` allows to bandpass filter
-CCFs before plotting (new in 1.5).
+CCFs before plotting (new in 1.5). Passing ``--startdate`` and ``--enddate``
+parameters allows to specify which period of data should be plotted. By default
+the plot uses dates determined in database.
 
 .. include:: clickhelp/msnoise-plot-ccftime.rst
 
