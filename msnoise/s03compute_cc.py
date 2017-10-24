@@ -182,10 +182,10 @@ def main():
         logging.info("NO FILTERS DEFINED, exiting")
         sys.exit()
 
-    params = Params()
-    params.fetch_data(db)
+    params = Params(db)
 
     logging.info("Will compute %s" % " ".join(params.components_to_compute))
+
     if params.remove_response:
         logging.debug('Pre-loading all instrument response')
         responses = preload_instrument_responses(db)
@@ -213,15 +213,8 @@ def main():
                      (goal_day, len(pairs), len(stations)))
         jt = time.time()
 
-        comps = []
-        for comp in params.components_to_compute:
-            if comp[0] in ["R", "T"] or comp[1] in ["R", "T"]:
-                comps.append("E")
-                comps.append("N")
-            else:
-                comps.append(comp[0])
-                comps.append(comp[1])
-        comps = np.unique(comps)
+        comps = prepare_component_list(params)
+
         basetime, stream = preprocess(db, stations, comps, goal_day, params,
                                       responses)
 
@@ -440,6 +433,28 @@ def main():
         logging.info("Job Finished. It took %.2f seconds" % (time.time() - jt))
         del stream
     logging.info('*** Finished: Compute CC ***')
+
+
+def prepare_component_list(params):
+    """
+
+    :type params: msnoise.default.Params
+    :param params: Params dictionary with fetched data from database.
+
+    :rtype: list(str)
+    :return: List of strings with unique component letters.
+    """
+
+    comps = []
+    for comp in params.components_to_compute:
+        if comp[0] in ["R", "T"] or comp[1] in ["R", "T"]:
+            comps.append("E")
+            comps.append("N")
+        else:
+            comps.append(comp[0])
+            comps.append(comp[1])
+    comps = np.unique(comps)
+    return comps
 
 
 if __name__ == "__main__":

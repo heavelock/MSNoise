@@ -64,7 +64,7 @@ default['plugins'] = ["Comma separated list of plugin names. Plugins names shoul
 
 
 class Params():
-    def __init__(self):
+    def __init__(self, db):
         self.data_folder = None
         self.output_folder = None
         self.data_structure = None
@@ -108,6 +108,8 @@ class Params():
         self.dtt_maxerr = None
         self.dtt_maxdt = None
         self.plugins = None
+
+        self.fetch_data(db)
 
     def fetch_data(self, db):
         self.data_folder  = get_config(db, "data_folder")
