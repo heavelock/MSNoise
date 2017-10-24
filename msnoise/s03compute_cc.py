@@ -193,21 +193,7 @@ def main():
         responses = None
 
     while is_next_job(db, jobtype='CC'):
-        jobs = get_next_job(db, jobtype='CC')
-        stations = []
-        pairs = []
-        refs = []
-
-        for job in jobs:
-            refs.append(job.ref)
-            pairs.append(job.pair)
-            netsta1, netsta2 = job.pair.split(':')
-            stations.append(netsta1)
-            stations.append(netsta2)
-            goal_day = job.day
-        del jobs
-
-        stations = np.unique(stations)
+        goal_day, pairs, refs, stations = prepare_job_details(db)
 
         logging.info("New CC Job: %s (%i pairs with %i stations)" %
                      (goal_day, len(pairs), len(stations)))
@@ -435,8 +421,35 @@ def main():
     logging.info('*** Finished: Compute CC ***')
 
 
+def prepare_job_details(db):
+    """
+
+    :param db:
+    :return: 
+    """
+    jobs = get_next_job(db, jobtype='CC')
+
+    goal_day = None
+    stations = []
+    pairs = []
+    refs = []
+
+    for job in jobs:
+        refs.append(job.ref)
+        pairs.append(job.pair)
+        netsta1, netsta2 = job.pair.split(':')
+        stations.append(netsta1)
+        stations.append(netsta2)
+        goal_day = job.day
+
+    stations = np.unique(stations)
+
+    return goal_day, pairs, refs, stations
+
+
 def prepare_component_list(params):
     """
+    Method that prepares list of unique component letters.
 
     :type params: msnoise.default.Params
     :param params: Params dictionary with fetched data from database.
