@@ -3,7 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from datetime import date
 
-from msnoise.api import build_movstack_datelist, get_config, update_config
+from msnoise.api import build_movstack_datelist, get_config, update_config,\
+    get_results
 from msnoise.msnoise_table_def import Base, Config
 
 
@@ -122,10 +123,31 @@ class TestUpdateConfigAndGetConfig(TestCase):
         self.session.close()
 
 
+class TestGetResults(TestCase):
+    def setUp(self):
+        # Create a in memory database only once for test suite
+        engine = create_engine('sqlite:///')
+        Base.metadata.create_all(engine)
+
+        make_session = sessionmaker(bind=engine)
+        self.session = make_session()
+
+        self.session.add(Config(name="maxlag",
+                                value=str(120.0)))
+        self.session.add(Config(name='cc_sampling_rate',
+                                value=str(12.0)))
+
+    def test_get_results_fail_non_esisting_path(self):
+        with self.assertRaises(NotADirectoryError):
+            get_results(self.session, "AABBGGRR", "BBCCDD", 1, "ZZ",
+                        [0, 1, 2, 3, 4])
+
+
 def suite():
     testsuite = TestSuite()
     testsuite.addTest(makeSuite(TestBuildMovstackDatelist))
     testsuite.addTest(makeSuite(TestUpdateConfigAndGetConfig))
+    testsuite.addTest(makeSuite(TestGetResults))
 
     return testsuite
 
