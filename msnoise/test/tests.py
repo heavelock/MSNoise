@@ -6,6 +6,9 @@ import shutil
 import glob
 from obspy import read
 
+# Uncomment it when the test_api will be merged in
+# from msnoise.test import test_api
+
 class MSNoiseTests(unittest.TestCase):
 
     def setUp(self):
@@ -372,7 +375,8 @@ class MSNoiseTests(unittest.TestCase):
             traceback.print_exc()
             self.fail()
 
-def main():
+
+def functional_tests():
     import matplotlib.pyplot as plt
     plt.switch_backend("agg")
     import os
@@ -388,5 +392,19 @@ def main():
     if not result.wasSuccessful():
         sys.exit(1)
 
+def unit_tests():
+    loader = unittest.TestLoader()
+    suite = unittest.TestSuite()
+
+    # Uncomment when the first test suite will be added
+    # suite.addTests(loader.loadTestsFromModule(test_api))
+
+    runner = unittest.TextTestRunner(verbosity=4)
+    result = runner.run(suite)
+
 if __name__ == '__main__':
-    main()
+    print("Running unit tests")
+    unit_tests()
+    print("Running functional tests")
+    functional_tests()
+
