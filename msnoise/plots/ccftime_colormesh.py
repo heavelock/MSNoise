@@ -18,13 +18,8 @@ Example:
 """
 # plot ccffreq
 
-import datetime
-
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 import numpy as np
-from matplotlib.widgets import Cursor
 from obspy.signal.filter import bandpass
 
 from msnoise.api import build_movstack_datelist, connect, get_config, \
@@ -51,7 +46,6 @@ def main(sta1, sta2, filterid, components, mov_stack=1, show=False,
 
     t = np.arange(samples)/cc_sampling_rate - maxlag
 
-
     if not sta2 >= sta1:
         raise Exception("Station names are not in alphabetical order!")
 
@@ -65,8 +59,7 @@ def main(sta1, sta2, filterid, components, mov_stack=1, show=False,
     curves = []
     dates = []
 
-
-    for i, (line, day) in enumerate(zip(stack_total,datelist)):
+    for line, day in zip(stack_total, datelist):
         if np.all(np.isnan(line)):
             continue
 
@@ -138,4 +131,15 @@ def check_same_length_of_stacks(all_curves):
 
 
 def f(x, alphafactor):
+    """
+    Method that calcualtes a power of provided value with preserving a sign.
+
+    :type x: float
+    :param x: Value that has to be recalculated
+    :type alphafactor: float
+    :param alphafactor: Value of power that has to be used in calculations.
+
+    :rtype: float
+    :return: Returns recalculated value by a power with sign preserved.
+    """
     return np.sign(x)*(np.abs(x)**alphafactor)
