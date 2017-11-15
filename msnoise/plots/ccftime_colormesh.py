@@ -93,7 +93,7 @@ def main(sta1, sta2, filterid, components, mov_stack=1, show=False,
     if vmax is None:
         vmax = np.max(np.abs(curves))
     if vmin is None:
-        vmin = -vmax
+        vmin = -np.max(np.abs(curves))
 
     pc = ax.pcolormesh(t, dates, curves, cmap='seismic', vmax=vmax, vmin=vmin)
 

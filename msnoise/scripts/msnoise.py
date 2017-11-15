@@ -590,9 +590,9 @@ def ccftime(ctx, sta1, sta2, filterid, comp, mov_stack,
 @click.option('-r', '--refilter', default=None,
               help='Refilter CCFs before plotting (e.g. 4:8 for filtering CCFs '
                    'between 4.0 and 8.0 Hz. This will update the plot title.')
-@click.option('--vmin', default=None, help='Minimum value on colorbar scale')
-@click.option('--vmax', default=None, help='Minimum value on colorbar scale')
-@click.option('--alphafactor', default=None,
+@click.option('--vmin', type=float, default=None, help='Minimum value on colorbar scale')
+@click.option('--vmax', type=float, default=None, help='Minimum value on colorbar scale')
+@click.option('--alphafactor', type=float, default=None,
               help='Exponential scaling factor for amplitudes')
 @click.pass_context
 def ccftime_colormesh(ctx, sta1, sta2, filterid, comp, mov_stack, show, outfile,
