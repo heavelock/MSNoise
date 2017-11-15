@@ -575,6 +575,38 @@ def ccftime(ctx, sta1, sta2, filterid, comp, mov_stack,
          envelope, refilter)
 
 
+
+@click.command()
+@click.argument('sta1')
+@click.argument('sta2')
+@click.option('-f', '--filterid', default=1, help='Filter ID')
+@click.option('-c', '--comp', default="ZZ", help='Components (ZZ, ZR,...)')
+@click.option('-m', '--mov_stack', default=1,
+              help='Mov Stack to read from disk')
+@click.option('-s', '--show', help='Show interactively?',
+              default=True, type=bool)
+@click.option('-o', '--outfile', help='Output filename (?=auto)',
+              default=None, type=str)
+@click.option('-r', '--refilter', default=None,
+              help='Refilter CCFs before plotting (e.g. 4:8 for filtering CCFs '
+                   'between 4.0 and 8.0 Hz. This will update the plot title.')
+@click.option('--vmin', default=None, help='Minimum value on colorbar scale')
+@click.option('--vmax', default=None, help='Minimum value on colorbar scale')
+@click.option('--alphafactor', default=None,
+              help='Exponential scaling factor for amplitudes')
+@click.pass_context
+def ccftime_colormesh(ctx, sta1, sta2, filterid, comp, mov_stack, show, outfile,
+                      refilter, vmin, vmax, alphafactor):
+    """Plots the ccf vs time between sta1 and sta2 (parses the dt/t results)\n
+    STA1 and STA2 must be provided with this format: NET.STA !"""
+    if ctx.obj['MSNOISE_custom']:
+        from ccftime_colormesh import main
+    else:
+        from ..plots.ccftime_colormesh import main
+        main(sta1, sta2, filterid, comp, mov_stack, show, outfile,
+              refilter, vmin, vmax, alphafactor)
+
+
 @click.command()
 @click.argument('sta1')
 @click.argument('sta2')
@@ -666,6 +698,7 @@ plot.add_command(data_availability)
 plot.add_command(dvv)
 plot.add_command(interferogram)
 plot.add_command(ccftime)
+plot.add_command(ccftime_colormesh)
 plot.add_command(mwcs)
 plot.add_command(distance)
 plot.add_command(station_map)

@@ -31,20 +31,17 @@ from msnoise.api import build_movstack_datelist, connect, get_config, \
     get_filters, get_results, get_maxlag_samples
 
 
-def main(sta1, sta2, filterid, components, mov_stack=1, ampli=5, show=False,
-         outfile=None, refilter=None):
+def main(sta1, sta2, filterid, components, mov_stack=1, show=False,
+         outfile=None, refilter=None, vmax=None, vmin=None, alphafactor=None):
 
     db = connect()
     cc_sampling_rate = float(get_config(db, 'cc_sampling_rate'))
     maxlag = float(get_config(db, 'maxlag'))
     samples = get_maxlag_samples(db)
     start, end, datelist = build_movstack_datelist(db)
-    base = mdates.date2num(start)
     sta1 = sta1.replace('.', '_')
     sta2 = sta2.replace('.', '_')
 
-    # TODO: Height adjustment of the plot for large number of stacks.
-    # Preferably interactive
     fig, ax = plt.subplots(figsize=(12, 9))
 
     if refilter:
@@ -89,9 +86,16 @@ def main(sta1, sta2, filterid, components, mov_stack=1, ampli=5, show=False,
     if check_same_length_of_stacks(curves):
         curves = np.array(curves)
 
+    if alphafactor is not None:
+        applicator = np.vectorize(f)
+        curves = applicator(curves, alphafactor)
 
-    vmax = np.max(np.abs(curves))
-    pc = ax.pcolormesh(t, dates, curves, cmap='seismic', vmax=vmax, vmin=-vmax)
+    if vmax is None:
+        vmax = np.max(np.abs(curves))
+    if vmin is None:
+        vmin = -vmax
+
+    pc = ax.pcolormesh(t, dates, curves, cmap='seismic', vmax=vmax, vmin=vmin)
 
     fig.colorbar(pc)
 
@@ -120,30 +124,6 @@ def main(sta1, sta2, filterid, components, mov_stack=1, ampli=5, show=False,
         plt.close(fig)
 
 
-def prepare_abs_postitive_fft(line, sampling_rate):
-    """
-    Method that returns a positive part of FFT of provided signal along with
-    a corresponding frequency vector.
-
-    :type line: numpy.ndarray
-    :param line: Signal to calculate fft.
-    :type sampling_rate: float
-    :param sampling_rate: Sampling rate of provided signal
-
-    :rtype: tuple(numpy.ndarray, numpy.ndarray)
-    :return: Tuple of two arrays. One contains frequency vector for positive
-    part of FFT, second contains positive and absolute FFT of input array.
-    """
-    val = np.fft.fft(line)
-    val = np.abs(val)
-
-    freq = np.fft.fftfreq(len(line), (1/sampling_rate))
-    freq = [x for x in freq if x >= 0]
-
-    val = val[:len(freq)]
-
-    return freq, val
-
 def check_same_length_of_stacks(all_curves):
     """
     Checks if all provided lines are equal in length
@@ -155,3 +135,7 @@ def check_same_length_of_stacks(all_curves):
     :return: Returns if all rows in list are equal in length
     """
     return all([len(all_curves[0]) == len(x) for x in all_curves])
+
+
+def f(x, alphafactor):
+    return np.sign(x)*(np.abs(x)**alphafactor)
